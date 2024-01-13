@@ -18,9 +18,18 @@ app = Dash(__name__, pages_folder='pages', use_pages=True)
 app.layout = html.Div([
 	html.P("FIFA WORLD CUP ANALYSIS - GROUP 62", id="title"),
 
-    html.Div(id="selection_container", children=[
-	    dcc.Link(page['name'], href=page["relative_path"])\
-			  for page in dash.page_registry.values()]
+    html.Div(id="selection-container", children=[
+		html.Div(id="selection-group-1", children=[
+			dcc.Link("INTRO", href="/", className="page-option", id="intro"),
+	        dcc.Link("DATASET", href="/dataset", className="page-option", id="dataset"),
+	        dcc.Link("GITHUB", href="/source", className="page-option", id="source")
+        ]),
+	    
+	    dcc.Link("PASSING NETWORK", href="/passing", className="page-option", id="passing"),
+	    dcc.Link("ACTIVITY HEATMAP", href="/heatmap", className="page-option", id="heatmap"),
+	    dcc.Link("SHOT ANALYSIS", href="/shot", className="page-option", id="shot"),
+	    dcc.Link("DYNAMIC PLAY TIMELINE", href="/timeline", className="page-option", id="timeline")
+    ]
 	),
 
 	dash.page_container

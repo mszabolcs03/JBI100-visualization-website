@@ -22,35 +22,63 @@ body {
     color: white;
     text-align: center;
     overflow: hidden; /* Hide scrollbars */
-
 }
 
 #title {
     width: 100vw;
     height: 100px;
-    font-size: 40px;
+    font-size: 3vw;
     font-weight: 600;
     margin: 0;
     vertical-align: auto;
-    line-height: 100px;
+    line-height: 120px;
+    user-select: none;
 }
 
-#selection_container {
+#selection-container {
     width: 60vw;
-    height: fit-content;
-    margin: auto;
+    display: block;
+    /* background-color: green; */
+    height: 80px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    user-select: none;
 }
-    #selection_container>* {
+    #selection-group-1 {
+        /* background-color: #FF9761; */
+        height: 40px;
+    }
+
+    .page-option {
+        /* background-color: #0EDFA7; */
+        width: fit-content;
+        height: 30px;
         padding-left: 20px;
         padding-right: 20px;
-        color: white;
-        text-decoration: none;
+        line-break: auto;
+        color: var(--lightgrey);
+        text-decoration: underline;
+        /* background-color: #FF4D5C; */
+        border-radius: 5px;
+    }
+    .page-option:hover {
+        filter: brightness(150%);
     }
 
 #content {
     width: 60vw;
     height: fit-content;
-    margin: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 25px;
+    /* background-color: #FFE066; */
+
+}
+
+#github-link {
+    color: white;
+    text-decoration: underline;
 }
 
 

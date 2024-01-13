@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output
 from mplsoccer import Pitch, Sbopen, VerticalPitch
 
 
-dash.register_page(__name__, path='/heatmap', name="ACTIVITY HEATMAP")
+dash.register_page(__name__, path='/passing', name="PASSING NETWORK")
 
 ####################### LOAD DATASET #############################
 # Load the dataset
@@ -20,4 +20,5 @@ df, df_related, df_freeze, df_tactics = parser.event(3869685)
 layout = html.Div(children=[
     html.Div(id="content", children=[
 
-    ])])
+    ])
+])
