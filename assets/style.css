@@ -21,8 +21,13 @@ body {
     font-family: “Segoe”, sans-serif;
     color: white;
     text-align: center;
-    overflow: hidden; /* Hide scrollbars */
+    overflow: auto;
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
 }
+    body::-webkit-scrollbar { 
+        display: none;  /* Safari and Chrome */
+    }   
 
 #title {
     width: 100vw;
@@ -89,4 +94,6 @@ body {
 /* // // DATASET // //  */
 #data-table {
     overflow-x: scroll;
+    overflow-y: hidden;
+    height: fit-content;
 }

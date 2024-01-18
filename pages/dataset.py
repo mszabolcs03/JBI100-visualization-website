@@ -23,7 +23,7 @@ layout = html.Div(children=[
 
         data=df.to_dict('records'),
         page_size=20,
-        style_cell={"background-color": "lightgrey", "border": "solid 1px var(--darkbg)", "color": "black", "font-size": "11px", "text-align": "left"},
-        style_header={"background-color": "#212131", "font-weight": "bold", "color": "white", "padding": "10px", "font-size": "18px"},
+        style_cell={"background-color": "lightgrey", "outline": "solid 0.5px var(--darkbg)", "color": "black", "font-size": "11px", "text-align": "left", "padding": "8px"},
+        style_header={"background-color": "#212131", "font-weight": "500", "color": "white", "padding": "8px", "font-size": "15px"},
     )
 ])
