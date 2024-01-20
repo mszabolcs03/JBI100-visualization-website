@@ -102,3 +102,16 @@ body {
     overflow-y: hidden;
     height: fit-content;
 }
+
+
+
+
+
+/* // // TIMELINE // //  */
+#timeline-player-dropdown {
+    color: black;
+}
+
+#pitch-figure-timeline {
+    height: 600px;
+}
