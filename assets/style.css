@@ -108,7 +108,7 @@ body {
 
 
 /* // // TIMELINE // //  */
-#timeline-player-dropdown {
+#timeline-player-dropdown, #timeline-team-dropdown {
     color: black;
 }
 
