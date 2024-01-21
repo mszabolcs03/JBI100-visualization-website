@@ -23,14 +23,21 @@ df, df_related, df_freeze, df_tactics = parser.event(3869685)
 
 
 ##################
-initial_player_name = "Adrien Rabiot"
+initial_player_name = "Gonzalo Ariel Montiel"
 
+#filter actions
 mask_action = (df.type_name == "Pass") | (df.type_name == "Shot") | (df.type_name == "Carry")
+#select player
 mask_player = df.player_name == initial_player_name
-
-mask_master = mask_action & mask_player
-
+#filter time
+mask_time_min = df.minute > -1
+mask_time_max = df.minute < 1000
+#combine filters
+mask_master = mask_action & mask_player & mask_time_min & mask_time_max
+#get filtered dataframe
 df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]
+
+print(df_actions["minute"].min(), df_actions["minute"].max())
 
 fig = px.scatter(x=df_actions['x'], y=df_actions['y'])
 
@@ -51,6 +58,8 @@ for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"]
     arrows.append(arrow)
 fig.update_layout(annotations=arrows)
 
+
+
 ####################### PAGE LAYOUT #############################
 layout = html.Div(children=[
     html.Div(id="content", children=[
@@ -67,22 +76,58 @@ layout = html.Div(children=[
             id='pitch-figure-timeline',
             figure=fig,
             config={ 'modeBarButtonsToRemove': ['zoom', 'pan'], 'staticPlot': True }
+        ),
+
+        dcc.Slider(
+            min=0, 
+            max=df["minute"].max(),
+            id='timeline-min-slider',
+            marks={
+                int(df_actions["minute"].min()): {'label': 'start', 'style': {'color': '#77b0b1'}},
+                int(df_actions["minute"].max()): {'label': 'end'},
+            },
+            step=1,
+            value=df_actions["minute"].min(),
+            tooltip={"placement": "bottom", "always_visible": True}
+        ),
+        dcc.Slider(
+            min=0, 
+            max=df["minute"].max(),
+            id='timeline-max-slider',
+            marks={
+                int(df_actions["minute"].min()): {'label': 'start', 'style': {'color': '#77b0b1'}},
+                int(df_actions["minute"].max()): {'label': 'end'},
+            },
+            step=1,            value=df_actions["minute"].max(),
+            tooltip={"placement": "bottom", "always_visible": True}
         )
     ])
 ])
 
+# UPDATE FIGURE
 @callback(
     Output('pitch-figure-timeline', 'figure'),
-    Input('timeline-player-dropdown', 'value')
+    Input('timeline-player-dropdown', 'value'),
+    Input('timeline-min-slider', 'value'),
+    Input('timeline-max-slider', 'value')
 )
-def update_graph(selected_player):
+def update_graph(selected_player, min_time, max_time):
+    #filter actions
     mask_action = (df.type_name == "Pass") | (df.type_name == "Shot") | (df.type_name == "Carry")
+    #select player
     mask_player = df.player_name == selected_player
-
-    mask_master = mask_action & mask_player
-
+    #filter time
+    mask_time_min = df.minute > min_time
+    mask_time_max = df.minute < max_time
+    #combine filters
+    mask_master = mask_action & mask_player & mask_time_min & mask_time_max
+    #get filtered dataframe
     df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]
-    fig = px.scatter(x=df_actions['x'], y=df_actions['y'])
+    
+    print(min_time, max_time)
+
+    # fig = px.scatter(x=df_actions['x'], y=df_actions['y'])
+    fig = px.scatter(df_actions, x='x', y='y')
 
     arrows = []
     for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"], df_actions["y"]):
@@ -99,7 +144,7 @@ def update_graph(selected_player):
             arrowcolor='rgb(50,50,0)',)
         )
         arrows.append(arrow)
-    print(arrows)
+    
 
     fig.update_layout(annotations=arrows)
     fig.update_layout(xaxis_range=[0, 100])
@@ -107,3 +152,19 @@ def update_graph(selected_player):
 
 
     return fig
+
+# UPDATE SLIDER MARKS
+# callback(
+#     Output('timeline-min-slider', 'marks'),
+#     Input('timeline-player-dropdown', 'value')
+# )
+# def update_slider_range(selected_player):
+#     # # Filter DataFrame based on the selected player
+#     # player_data = df_actions[df_actions['player_name'] == selected_player]
+
+#     # # Calculate the min and max values for the slider based on the filtered DataFrame
+#     # min_value = player_data['minute'].min()
+#     # max_value = player_data['minute'].max()
+
+#     # return min_value, max_value
+#     print("slider range changed")
