@@ -98,10 +98,6 @@ parser = Sbopen()
 # Initialize the pitch
 pitch = Pitch(line_color='white', pitch_color='green')
 
-# Function to get matches between two teams
-# ... [The rest of the get_matches_between_teams function goes here]
-
-# Function to create a heatmap with a football pitch background
 # Function to create a heatmap with a football pitch background
 def create_football_pitch_heatmap(player_df):
     # Scale the 'x' and 'y' coordinates to the full pitch dimensions
