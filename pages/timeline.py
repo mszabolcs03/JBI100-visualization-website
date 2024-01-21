@@ -381,4 +381,4 @@ def get_pitch():
             'fillcolor': "rgba(0,0,0,0)"
     })
 
-    return 
+    return pitch
