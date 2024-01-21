@@ -66,13 +66,13 @@ layout = html.Div(children=[
 
         dcc.Dropdown(
             id='timeline-team-dropdown',
-            options=[{'label': team, 'value': team} for team in df['team_name'].unique()],
+            options=[{'label': "all", 'value': "all"}] + [{'label': team, 'value': team} for team in df['team_name'].unique()],
             clearable=False,
             style={"width": "60%"}
         ),
         dcc.Dropdown(
             id='timeline-player-dropdown',
-            options=[{'label': player, 'value': player} for player in df['player_name'].unique()],
+            options=[{'label': "all", 'value': "all"}] + [{'label': player, 'value': player} for player in df['player_name'].unique()],
             # value=initial_player_name,
             clearable=False,
             style={"width": "60%"}
@@ -116,14 +116,17 @@ layout = html.Div(children=[
     Input('timeline-team-dropdown', 'value')
 )
 def update_player_dropdown(selected_team):
-    mask_team = df.team_name == selected_team
+    if selected_team == "all":
+        mask_team = df.team_name == df.team_name
+    else:
+        mask_team = df.team_name == selected_team
 
     players_in_team = [player for player in df.loc[mask_team, 'player_name'].dropna().unique()]
 
     print(players_in_team)
     print(type(players_in_team))
 
-    return players_in_team
+    return ["all"] + players_in_team
 
 # UPDATE SLIDER MARKS
 @callback(
@@ -135,18 +138,16 @@ def update_slider_range(selected_player):
     #filter actions
     mask_action = (df.type_name == "Pass") | (df.type_name == "Shot") | (df.type_name == "Carry")
     #select player
-    mask_player = df.player_name == selected_player
+    if selected_player == "all":
+        mask_player = df.player_name == df.player_name
+    else:
+        mask_player = df.player_name == selected_player
     #combine filters
     mask_master = mask_action & mask_player
     #get filtered dataframe
-    df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]    # player_data = df_actions[df_actions['player_name'] == selected_player]
+    # df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]    # player_data = df_actions[df_actions['player_name'] == selected_player]
 
     print(selected_player)
-    # print(int(df["minute"].min()))
-    # print(df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']].columns)
-    # print(df.loc[mask_player & mask_action].minute.min())
-    
-    # print(len(df.minute))
 
     start_time = int(df.loc[mask_player & mask_action].minute.min())
     end_time = int(df.loc[mask_player & mask_action].minute.max())
@@ -163,20 +164,29 @@ def update_slider_range(selected_player):
 # UPDATE FIGURE
 @callback(
     Output('pitch-figure-timeline', 'figure'),
+    Input('timeline-team-dropdown', 'value'),
     Input('timeline-player-dropdown', 'value'),
     Input('timeline-min-slider', 'value'),
     Input('timeline-max-slider', 'value')
 )
-def update_graph(selected_player, min_time, max_time):
+def update_graph(selected_team, selected_player, min_time, max_time):
     #filter actions
     mask_action = (df.type_name == "Pass") | (df.type_name == "Shot") | (df.type_name == "Carry")
+    #select team
+    if selected_team == "all":
+        mask_team = df.team_name == df.team_name
+    else:
+        mask_team = df.team_name == selected_team
     #select player
-    mask_player = df.player_name == selected_player
+    if selected_player == "all":
+        mask_player = df.player_name == df.player_name
+    else:
+        mask_player = df.player_name == selected_player
     #filter time
     mask_time_min = df.minute > min_time
     mask_time_max = df.minute < max_time
     #combine filters
-    mask_master = mask_action & mask_player & mask_time_min & mask_time_max
+    mask_master = mask_action & mask_team & mask_player & mask_time_min & mask_time_max
     #get filtered dataframe
     df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]
     
