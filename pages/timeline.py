@@ -50,23 +50,25 @@ fig = px.scatter(
 arrows = []
 for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"], df_actions["y"]):
     arrow = go.layout.Annotation(dict(
-                    x=x0,
-                    y=y0,
-                    xref="x", yref="y",
-                    showarrow=True,
-                    axref="x", ayref='y',
-                    ax=x1,
-                    ay=y1,
-                    arrowhead=2,
-                    arrowwidth=2,
-                    arrowcolor='rgb(50,50,0)',)
-                )
+        x=x0,
+        y=y0,
+        xref="x", yref="y",
+        showarrow=True,
+        axref="x", ayref='y',
+        ax=x1,
+        ay=y1,
+        arrowhead=2,
+        arrowwidth=2,
+        arrowcolor='rgb(50,50,0)'
+        )
+    )
     arrows.append(arrow)
 
 fig.update_layout(hovermode='closest')
 fig.update_layout(annotations=arrows)
 fig.update_layout(xaxis_range=[3, 120])
 fig.update_layout(yaxis_range=[0, 80])
+fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
 
 fig.update_xaxes(showticklabels=False, title=None)
 fig.update_yaxes(showticklabels=False, title=None)
@@ -94,7 +96,7 @@ layout = html.Div(children=[
         dcc.Graph(
             id='pitch-figure-timeline',
             figure=fig,
-            # config={ 'modeBarButtonsToRemove': ['zoom', 'pan'], 'staticPlot': True }
+            config={ 'modeBarButtonsToRemove': ['zoom', 'pan'] }
         ),
 
         dcc.Slider(
@@ -148,6 +150,8 @@ def update_player_dropdown(selected_team):
     Input('timeline-player-dropdown', 'value')
 )
 def update_slider_range(selected_player):
+    if selected_player == None:
+        return {0: {'label': 'start'}, df["minute"].max(): {'label': 'end'}}, {0: {'label': 'start'}, df["minute"].max(): {'label': 'end'}}
     #filter actions
     mask_action = df['type_name'].isin(list_of_accepted_actions)
     #select player
@@ -161,15 +165,15 @@ def update_slider_range(selected_player):
 
     print(selected_player)
 
-    start_time = int(df.loc[mask_player & mask_action].minute.min())
-    end_time = int(df.loc[mask_player & mask_action].minute.max())
+    start_time = int(df.loc[mask_master].minute.min())
+    end_time = int(df.loc[mask_master].minute.max())
 
     print(start_time)
     print(end_time)
 
     marks={
         start_time: {'label': 'start'},
-        end_time: {'label': 'end'},
+        end_time: {'label': 'end'}
     }
     return marks, marks
 
@@ -221,15 +225,17 @@ def update_graph(selected_team, selected_player, min_time, max_time):
             ax=x1,
             ay=y1,
             arrowhead=2,
-            arrowwidth=2,
+            arrowwidth=2.5,
             arrowcolor='rgb(50,50,0)',)
         )
         arrows.append(arrow)
+    
     
     fig.update_layout(hovermode='closest')
     fig.update_layout(annotations=arrows)
     fig.update_layout(xaxis_range=[3, 120])
     fig.update_layout(yaxis_range=[0, 80])
+    fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
 
     fig.update_xaxes(showticklabels=False, title=None)
     fig.update_yaxes(showticklabels=False, title=None)
