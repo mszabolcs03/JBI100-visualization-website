@@ -44,8 +44,7 @@ fig = px.scatter(
     df_actions,
     x='x',
     y='y',
-    hover_data=['type_name', 'minute', 'second'],
-    labels=dict(x="", y="")
+    hover_data=['type_name', 'minute', 'second']
 )
 
 arrows = []
@@ -66,8 +65,8 @@ for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"]
 
 fig.update_layout(hovermode='closest')
 fig.update_layout(annotations=arrows)
-fig.update_layout(xaxis_range=[-0.6, 100.6])
-fig.update_layout(yaxis_range=[-1, 101])
+fig.update_layout(xaxis_range=[3, 120])
+fig.update_layout(yaxis_range=[0, 80])
 
 fig.update_xaxes(showticklabels=False, title=None)
 fig.update_yaxes(showticklabels=False, title=None)
@@ -208,8 +207,7 @@ def update_graph(selected_team, selected_player, min_time, max_time):
         df_actions,
         x='x',
         y='y',
-        hover_data=['type_name', 'minute', 'second'],
-        labels=dict(x="", y="")
+        hover_data=['type_name', 'minute', 'second']
     )
 
     arrows = []
@@ -230,8 +228,8 @@ def update_graph(selected_team, selected_player, min_time, max_time):
     
     fig.update_layout(hovermode='closest')
     fig.update_layout(annotations=arrows)
-    fig.update_layout(xaxis_range=[-0.6, 100.6])
-    fig.update_layout(yaxis_range=[-1, 101])
+    fig.update_layout(xaxis_range=[3, 120])
+    fig.update_layout(yaxis_range=[0, 80])
 
     fig.update_xaxes(showticklabels=False, title=None)
     fig.update_yaxes(showticklabels=False, title=None)
