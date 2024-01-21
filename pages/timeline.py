@@ -83,8 +83,8 @@ layout = html.Div(children=[
             max=df["minute"].max(),
             id='timeline-min-slider',
             marks={
-                int(df_actions["minute"].min()): {'label': 'start', 'style': {'color': '#77b0b1'}},
-                int(df_actions["minute"].max()): {'label': 'end'},
+                0: {'label': 'start'},
+                int(df["minute"].max()): {'label': 'end'},
             },
             step=1,
             value=df_actions["minute"].min(),
@@ -95,8 +95,8 @@ layout = html.Div(children=[
             max=df["minute"].max(),
             id='timeline-max-slider',
             marks={
-                int(df_actions["minute"].min()): {'label': 'start', 'style': {'color': '#77b0b1'}},
-                int(df_actions["minute"].max()): {'label': 'end'},
+                0: {'label': 'start'},
+                int(df["minute"].max()): {'label': 'end'},
             },
             step=1,            value=df_actions["minute"].max(),
             tooltip={"placement": "bottom", "always_visible": True}
@@ -154,17 +154,36 @@ def update_graph(selected_player, min_time, max_time):
     return fig
 
 # UPDATE SLIDER MARKS
-# callback(
-#     Output('timeline-min-slider', 'marks'),
-#     Input('timeline-player-dropdown', 'value')
-# )
-# def update_slider_range(selected_player):
-#     # # Filter DataFrame based on the selected player
-#     # player_data = df_actions[df_actions['player_name'] == selected_player]
+@callback(
+    Output('timeline-min-slider', 'marks'),
+    Output('timeline-max-slider', 'marks'),
+    Input('timeline-player-dropdown', 'value')
+)
+def update_slider_range(selected_player):
+    #filter actions
+    mask_action = (df.type_name == "Pass") | (df.type_name == "Shot") | (df.type_name == "Carry")
+    #select player
+    mask_player = df.player_name == selected_player
+    #combine filters
+    mask_master = mask_action & mask_player
+    #get filtered dataframe
+    df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]    # player_data = df_actions[df_actions['player_name'] == selected_player]
 
-#     # # Calculate the min and max values for the slider based on the filtered DataFrame
-#     # min_value = player_data['minute'].min()
-#     # max_value = player_data['minute'].max()
+    print(selected_player)
+    # print(int(df["minute"].min()))
+    # print(df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']].columns)
+    # print(df.loc[mask_player & mask_action].minute.min())
+    
+    # print(len(df.minute))
 
-#     # return min_value, max_value
-#     print("slider range changed")
+    start_time = int(df.loc[mask_player & mask_action].minute.min())
+    end_time = int(df.loc[mask_player & mask_action].minute.max())
+
+    print(start_time)
+    print(end_time)
+
+    marks={
+        start_time: {'label': 'start'},
+        end_time: {'label': 'end'},
+    }
+    return marks, marks
