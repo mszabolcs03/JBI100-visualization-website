@@ -113,5 +113,6 @@ body {
 }
 
 #pitch-figure-timeline {
-    height: 600px;
+    width: 50vw;
+    height: calc(50vw / 3 * 2);
 }

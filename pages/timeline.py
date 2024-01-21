@@ -24,22 +24,29 @@ df, df_related, df_freeze, df_tactics = parser.event(3869685)
 
 ##################
 initial_player_name = "Gonzalo Ariel Montiel"
+list_of_accepted_actions = ["Pass", 'Dribble', 'Shot', 'Shield']
+list_of_required_colums = ['type_name', 'x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']
 
 #filter actions
-mask_action = (df.type_name == "Pass") | (df.type_name == "Shot") | (df.type_name == "Carry")
+mask_action = df['type_name'].isin(list_of_accepted_actions)
 #select player
 mask_player = df.player_name == initial_player_name
 #filter time
-mask_time_min = df.minute > -1
-mask_time_max = df.minute < 1000
+mask_time_min = df.minute >= -1
+mask_time_max = df.minute <= 1000
 #combine filters
 mask_master = mask_action & mask_player & mask_time_min & mask_time_max
 #get filtered dataframe
-df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]
+df_actions = df.loc[mask_master, list_of_required_colums]
 
-print(df_actions["minute"].min(), df_actions["minute"].max())
-
-fig = px.scatter(x=df_actions['x'], y=df_actions['y'])
+#create figure
+fig = px.scatter(
+    df_actions,
+    x='x',
+    y='y',
+    hover_data=['type_name', 'minute', 'second'],
+    labels=dict(x="", y="")
+)
 
 arrows = []
 for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"], df_actions["y"]):
@@ -56,7 +63,14 @@ for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"]
                     arrowcolor='rgb(50,50,0)',)
                 )
     arrows.append(arrow)
+
+fig.update_layout(hovermode='closest')
 fig.update_layout(annotations=arrows)
+fig.update_layout(xaxis_range=[-0.6, 100.6])
+fig.update_layout(yaxis_range=[-1, 101])
+
+fig.update_xaxes(showticklabels=False, title=None)
+fig.update_yaxes(showticklabels=False, title=None)
 
 
 
@@ -81,7 +95,7 @@ layout = html.Div(children=[
         dcc.Graph(
             id='pitch-figure-timeline',
             figure=fig,
-            config={ 'modeBarButtonsToRemove': ['zoom', 'pan'], 'staticPlot': True }
+            # config={ 'modeBarButtonsToRemove': ['zoom', 'pan'], 'staticPlot': True }
         ),
 
         dcc.Slider(
@@ -136,7 +150,7 @@ def update_player_dropdown(selected_team):
 )
 def update_slider_range(selected_player):
     #filter actions
-    mask_action = (df.type_name == "Pass") | (df.type_name == "Shot") | (df.type_name == "Carry")
+    mask_action = df['type_name'].isin(list_of_accepted_actions)
     #select player
     if selected_player == "all":
         mask_player = df.player_name == df.player_name
@@ -145,7 +159,6 @@ def update_slider_range(selected_player):
     #combine filters
     mask_master = mask_action & mask_player
     #get filtered dataframe
-    # df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]    # player_data = df_actions[df_actions['player_name'] == selected_player]
 
     print(selected_player)
 
@@ -171,8 +184,8 @@ def update_slider_range(selected_player):
 )
 def update_graph(selected_team, selected_player, min_time, max_time):
     #filter actions
-    mask_action = (df.type_name == "Pass") | (df.type_name == "Shot") | (df.type_name == "Carry")
-    #select team
+    mask_action = df['type_name'].isin(list_of_accepted_actions)
+        #select team
     if selected_team == "all":
         mask_team = df.team_name == df.team_name
     else:
@@ -183,17 +196,21 @@ def update_graph(selected_team, selected_player, min_time, max_time):
     else:
         mask_player = df.player_name == selected_player
     #filter time
-    mask_time_min = df.minute > min_time
-    mask_time_max = df.minute < max_time
+    mask_time_min = df.minute >= min_time
+    mask_time_max = df.minute <= max_time
     #combine filters
     mask_master = mask_action & mask_team & mask_player & mask_time_min & mask_time_max
     #get filtered dataframe
-    df_actions = df.loc[mask_master, ['x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']]
+    df_actions = df.loc[mask_master, list_of_required_colums]
     
-    print(min_time, max_time)
-
-    # fig = px.scatter(x=df_actions['x'], y=df_actions['y'])
-    fig = px.scatter(df_actions, x='x', y='y')
+    #create figure
+    fig = px.scatter(
+        df_actions,
+        x='x',
+        y='y',
+        hover_data=['type_name', 'minute', 'second'],
+        labels=dict(x="", y="")
+    )
 
     arrows = []
     for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"], df_actions["y"]):
@@ -211,10 +228,12 @@ def update_graph(selected_team, selected_player, min_time, max_time):
         )
         arrows.append(arrow)
     
-
+    fig.update_layout(hovermode='closest')
     fig.update_layout(annotations=arrows)
-    fig.update_layout(xaxis_range=[0, 100])
-    fig.update_layout(yaxis_range=[0, 100])
+    fig.update_layout(xaxis_range=[-0.6, 100.6])
+    fig.update_layout(yaxis_range=[-1, 101])
 
+    fig.update_xaxes(showticklabels=False, title=None)
+    fig.update_yaxes(showticklabels=False, title=None)
 
     return fig
