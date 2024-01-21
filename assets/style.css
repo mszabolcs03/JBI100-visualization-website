@@ -78,7 +78,7 @@ body {
 
 #content {
     width: 80vw;
-    height: fit-content;
+    height: 100vh;
     margin-left: auto;
     margin-right: auto;
     margin-top: 25px;
@@ -108,11 +108,32 @@ body {
 
 
 /* // // TIMELINE // //  */
-#timeline-player-dropdown, #timeline-team-dropdown {
-    color: black;
+#timeline-dropdowns {
+    /* background-color: #FF4D5C; */
+    width: fit-content;
+    height: fit-content;
+    float: right;
 }
+    #timeline-player-dropdown, #timeline-team-dropdown {
+        color: black;
+        width: 30vw;
+        /* background-color: #0EDFA7; */
+        margin-bottom: 15px;
+    }
 
 #pitch-figure-timeline {
-    width: 50vw;
-    height: calc(50vw / 3 * 2);
+    float: left;
+    width: calc(50vw - 15px);
+    height: calc((50vw - 15px) / 3 * 2);
 }
+
+#timeline-sliders {
+        /* background-color: #FF9761; */
+        width: fit-content;
+        height: fit-content;
+        float: left;
+        margin-top: 15px;
+    }
+    #timeline-min-slider, #timeline-max-slider {
+        width: calc(80vw - 50px);
+    }

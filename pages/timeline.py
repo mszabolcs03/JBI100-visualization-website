@@ -25,7 +25,7 @@ df, df_related, df_freeze, df_tactics = parser.event(3869685)
 ##################
 initial_player_name = "Gonzalo Ariel Montiel"
 list_of_accepted_actions = ["Pass", 'Dribble', 'Shot', 'Shield']
-list_of_required_colums = ['type_name', 'x', 'y', 'end_x', 'end_y', 'pass_height_id', 'minute', 'second']
+list_of_required_colums = ['type_name', 'x', 'y', 'end_x', 'end_y', "player_name", 'minute', 'second', "team_name"]
 
 #filter actions
 mask_action = df['type_name'].isin(list_of_accepted_actions)
@@ -43,31 +43,9 @@ df_actions = df.loc[mask_master, list_of_required_colums]
 fig = px.scatter(
     df_actions,
     x='x',
-    y='y',
-    hover_data=['type_name', 'minute', 'second']
+    y='y'
 )
 
-arrows = []
-for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"], df_actions["y"]):
-    arrow = go.layout.Annotation(dict(
-        x=x0,
-        y=y0,
-        xref="x", yref="y",
-        showarrow=True,
-        axref="x", ayref='y',
-        ax=x1,
-        ay=y1,
-        arrowhead=2,
-        arrowwidth=2,
-        arrowcolor='rgb(50,50,0)'
-        )
-    )
-    arrows.append(arrow)
-
-fig.update_layout(hovermode='closest')
-fig.update_layout(annotations=arrows)
-fig.update_layout(xaxis_range=[3, 120])
-fig.update_layout(yaxis_range=[0, 80])
 fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
 
 fig.update_xaxes(showticklabels=False, title=None)
@@ -78,50 +56,57 @@ fig.update_yaxes(showticklabels=False, title=None)
 ####################### PAGE LAYOUT #############################
 layout = html.Div(children=[
     html.Div(id="content", children=[
-
-        dcc.Dropdown(
-            id='timeline-team-dropdown',
-            options=[{'label': "all", 'value': "all"}] + [{'label': team, 'value': team} for team in df['team_name'].unique()],
-            clearable=False,
-            style={"width": "60%"}
-        ),
-        dcc.Dropdown(
-            id='timeline-player-dropdown',
-            options=[{'label': "all", 'value': "all"}] + [{'label': player, 'value': player} for player in df['player_name'].unique()],
-            # value=initial_player_name,
-            clearable=False,
-            style={"width": "60%"}
-        ),
+        html.Div(id="timeline-dropdowns", children=[
+            dcc.Dropdown(
+                id='timeline-team-dropdown',
+                options=[{'label': "all", 'value': "all"}] + [{'label': team, 'value': team} for team in df['team_name'].unique()],
+                clearable=False,
+                placeholder="Select team(s)"
+            ),
+            dcc.Dropdown(
+                id='timeline-player-dropdown',
+                options=[{'label': "all", 'value': "all"}] + [{'label': player, 'value': player} for player in df['player_name'].unique()],
+                # value=initial_player_name,
+                clearable=False,
+                placeholder="Select player(s)"
+            )
+        ]),
 
         dcc.Graph(
             id='pitch-figure-timeline',
             figure=fig,
             config={ 'modeBarButtonsToRemove': ['zoom', 'pan'] }
+            # 'layout': go.Layout(
+            #     xaxis={'title': 'x-axis','fixedrange':True},
+            #     yaxis={'title': 'y-axis','fixedrange':True}
+            # )
         ),
 
-        dcc.Slider(
-            min=0, 
-            max=df["minute"].max(),
-            id='timeline-min-slider',
-            marks={
-                0: {'label': 'start'},
-                int(df["minute"].max()): {'label': 'end'},
-            },
-            step=1,
-            value=df_actions["minute"].min(),
-            tooltip={"placement": "bottom", "always_visible": True}
-        ),
-        dcc.Slider(
-            min=0, 
-            max=df["minute"].max(),
-            id='timeline-max-slider',
-            marks={
-                0: {'label': 'start'},
-                int(df["minute"].max()): {'label': 'end'},
-            },
-            step=1,            value=df_actions["minute"].max(),
-            tooltip={"placement": "bottom", "always_visible": True}
-        )
+        html.Div(id="timeline-sliders", children=[
+            dcc.Slider(
+                min=0, 
+                max=df["minute"].max(),
+                id='timeline-min-slider',
+                marks={
+                    0: {'label': 'start'},
+                    int(df["minute"].max()): {'label': 'end'},
+                },
+                step=1,
+                value=df_actions["minute"].min(),
+                tooltip={"placement": "bottom", "always_visible": True}
+            ),
+            dcc.Slider(
+                min=0, 
+                max=df["minute"].max(),
+                id='timeline-max-slider',
+                marks={
+                    0: {'label': 'start'},
+                    int(df["minute"].max()): {'label': 'end'},
+                },
+                step=1,            value=df_actions["minute"].max(),
+                tooltip={"placement": "bottom", "always_visible": True}
+            )
+        ])
     ])
 ])
 
@@ -211,33 +196,189 @@ def update_graph(selected_team, selected_player, min_time, max_time):
         df_actions,
         x='x',
         y='y',
-        hover_data=['type_name', 'minute', 'second']
+        hover_data=["player_name", "team_name", 'type_name', 'minute', 'second'],
     )
-
-    arrows = []
-    for x0,y0,x1,y1 in zip(df_actions["end_x"], df_actions["end_y"], df_actions["x"], df_actions["y"]):
-        arrow = go.layout.Annotation(dict(
-            x=x0,
-            y=y0,
-            xref="x", yref="y",
-            showarrow=True,
-            axref="x", ayref='y',
-            ax=x1,
-            ay=y1,
-            arrowhead=2,
-            arrowwidth=2.5,
-            arrowcolor='rgb(50,50,0)',)
-        )
-        arrows.append(arrow)
     
+    
+    fig.layout.xaxis.fixedrange = True
+    fig.layout.yaxis.fixedrange = True
     
     fig.update_layout(hovermode='closest')
-    fig.update_layout(annotations=arrows)
+    fig.update_layout(annotations = get_arrows(df_actions))
+    fig.update_layout(shapes = get_pitch())
     fig.update_layout(xaxis_range=[3, 120])
     fig.update_layout(yaxis_range=[0, 80])
     fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
+    fig.update_layout(plot_bgcolor='rgb(0, 200, 0)')
+    fig.update_layout(xaxis_showgrid=False, yaxis_showgrid=False)
 
     fig.update_xaxes(showticklabels=False, title=None)
     fig.update_yaxes(showticklabels=False, title=None)
 
+    fig.update_traces(marker=dict(color='black'))
+
     return fig
+
+def get_arrows(df_actions):
+    arrows = []
+
+    for i in range(len(df_actions["x"])):
+        # df_actions.iloc[i]
+        if df_actions.iloc[i]["team_name"] == "Argentina":
+            arrow_color = "rgb(8, 129, 197)"
+        else:
+            arrow_color = "rgb(252, 184, 39)"
+
+        arrow = go.layout.Annotation(dict(
+            x=df_actions.iloc[i]["end_x"],
+            y=df_actions.iloc[i]["end_y"],
+            xref="x",
+            yref="y",
+            showarrow=True,
+            axref="x",
+            ayref='y',
+            ax=df_actions.iloc[i]["x"],
+            ay=df_actions.iloc[i]["y"],
+            arrowhead=2,
+            arrowwidth=2.5,
+            arrowcolor=arrow_color
+        ))
+        arrows.append(arrow)
+    return arrows
+
+def get_pitch():
+    pitch = []
+    pitch.append({
+            'type': 'rect',
+            'x0': 0,
+            'x1': 25,
+            'y0': 13,
+            'y1': 66.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 0,
+            'x1': 10.5,
+            'y0': 27.5,
+            'y1': 52,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 2,
+            'x1': 3.5,
+            'y0': 35,
+            'y1': 44.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgb(255,255,255)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 98.5,
+            'x1': 121,
+            'y0': 13,
+            'y1': 66.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 112.5,
+            'x1': 121,
+            'y0': 27.5,
+            'y1': 52,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 119.5,
+            'x1': 121,
+            'y0': 35,
+            'y1': 44.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgb(255,255,255)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 61.5,
+            'x1': 61.5,
+            'y0': 0,
+            'y1': 100,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'circle',
+            'x0': 49.5,
+            'x1': 73.5,
+            'y0': 27.5,
+            'y1': 52,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'circle',
+            'x0': 0,
+            'x1': 5,
+            'y0': -2.5,
+            'y1': 2.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'circle',
+            'x0': 117.5,
+            'x1': 122.5,
+            'y0': -2.5,
+            'y1': 2.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+        'type': 'circle',
+        'x0': 0,
+        'x1': 5,
+        'y0': 77.5,
+        'y1': 82.5,
+        'xref': 'x',
+        'yref': 'y',
+        'line': {'color': "rgb(255,255,255)"},
+        'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'circle',
+            'x0': 117.5,
+            'x1': 122.5,
+            'y0': 77.5,
+            'y1': 82.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+
+    return 
