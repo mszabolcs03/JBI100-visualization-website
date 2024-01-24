@@ -30,9 +30,9 @@ competitions.head(20)
 df, df_related, df_freeze, df_tactics = parser.event(3869685)
 # Players involved in the final
 def getUniquePlayers():
-    return df['player_name'].value_counts()
+    return df['player_name']
 
-getUniquePlayers()
+
 
 # Replacing some full names with famous names
 replacements = {
@@ -41,6 +41,8 @@ replacements = {
     # Add more replacements here
 }
 df['player_name'] = df['player_name'].replace(replacements)
+#df2
+
 
 def deriveShotMapData(playername):
     # Filter for shots by the player
@@ -203,10 +205,19 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 layout = html.Div(children=[
     dbc.Container([
         # Row for the plots
-        dbc.Row([
-            dbc.Col(dcc.Graph(id='graph-output', figure=default_pitch_fig, style={'height': '500px'}), width=4),
-            dbc.Col(dcc.Graph(id='shot-map-image', figure=default_shot_map_fig, style={'height': '500px'}), width=3)
-        ] , justify = "center"), 
+    html.Div([
+            # First plot
+            html.Div(
+                dcc.Graph(id='graph-output', figure=default_pitch_fig),
+                style={'display': 'inline-block', 'width': '70%'}
+            ),
+            # Second plot
+            html.Div(
+                dcc.Graph(id='shot-map-image', figure=default_shot_map_fig),
+                style={'display': 'inline-block', 'width': '50%'}
+            )
+        ], style={'display': 'flex', 'flex-direction': 'row'}),
+
 
         dbc.Row([
             dbc.Col(dcc.Dropdown(

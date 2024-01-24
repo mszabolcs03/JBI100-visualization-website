@@ -40,7 +40,7 @@ dash.register_page(__name__, path='/passing', name="PASSING NETWORK")
 layout = html.Div([
     html.H1('Passing Network Visualization'),
     dcc.Dropdown(
-        id='team-dropdown',
+        id='team-dropdown',  # Corrected ID
         options=[{'label': team, 'value': team} for team in df['team_name'].unique()],
         value='Argentina'  # Default value
     ),
@@ -50,7 +50,7 @@ layout = html.Div([
 # Callback to update graph based on selected team
 @callback(
     Output('passing-network-graph', 'figure'),
-    [Input('team-dropdown', 'value')]
+    [Input('team-dropdown', 'value')]  # Corrected ID
 )
 def update_graph(selected_team):
     team_id = df[df['team_name'] == selected_team]['team_id'].iloc[0]
@@ -121,9 +121,11 @@ def update_graph(selected_team):
                                     line=dict(width=line_width, color=f'rgba(33, 180, 165, {pass_intensity})')))
 
     # Update layout
-    fig.update_layout(title=f'Passing Network for {team_name}',
+    fig.update_layout(title=f'Passing Network for {selected_team}',
                       showlegend=False,
-                      hoverlabel=dict(bgcolor="white", font_size=12, font_family="Rockwell"))
+                      hoverlabel=dict(bgcolor="white", font_size=12, font_family="Rockwell"),
+                      xaxis_title="Field Width",
+                      yaxis_title="Field Length")
 
     # Show the figure
     return fig
