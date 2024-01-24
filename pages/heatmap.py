@@ -20,4 +20,5 @@ df, df_related, df_freeze, df_tactics = parser.event(3869685)
 layout = html.Div(children=[
     html.Div(id="content", children=[
 
-    ])])
+    ])
+])
