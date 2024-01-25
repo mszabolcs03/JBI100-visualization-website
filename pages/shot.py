@@ -56,8 +56,8 @@ def deriveShotMapData(playername):
     return df_shots  # Returning the filtered DataFrame for further use
 
 def makePitch(PlayerNames):
-    img1 = Image.open('C:/Users/20211424/Documents/Y3/Q2/Visualization/New.png')
-    img = Image.open('C:/Users/20211424/Documents/Y3/Q2/Visualization/New2.png')
+    img1 = Image.open('C:/Users/szabi/Documents/GitHub/JBI100-visualization-website/pages/New2.png')
+    img = Image.open('C:/Users/szabi/Documents/GitHub/JBI100-visualization-website/pages/New2.png')
     
     fig = go.Figure()
 
