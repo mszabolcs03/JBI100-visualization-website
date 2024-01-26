@@ -43,6 +43,12 @@ replacements = {
 df['player_name'] = df['player_name'].replace(replacements)
 #df2
 
+team_lists = {}
+for team in df['team_name'].unique():
+    # Filter the DataFrame for the current team, excluding NaNs, and get player names
+    team_player_names = df[(df['team_name'] == team) & (df['player_name'].notna())]['player_name'].unique().tolist()
+    # Store the list in the dictionary with the team name as the key
+    team_lists[f"{team}_Player_Names"] = team_player_names
 
 def deriveShotMapData(playername):
     # Filter for shots by the player
@@ -56,9 +62,7 @@ def deriveShotMapData(playername):
     return df_shots  # Returning the filtered DataFrame for further use
 
 def makePitch(PlayerNames):
-    img1 = Image.open('C:/Users/20211424/Documents/Y3/Q2/Visualization/New.png')
-    img = Image.open('C:/Users/20211424/Documents/Y3/Q2/Visualization/New2.png')
-    
+    img = Image.open('pages/New2.png')
     fig = go.Figure()
 
     for name in PlayerNames:
@@ -198,6 +202,9 @@ refinedShotData = shotData.drop(columns=["timestamp", "x", "y", "end_x", "end_y"
 default_pitch_fig = makePitch(['Lionel Messi'])  # Assuming makePitch returns a Plotly figure
 default_shot_map_fig = generateShotMapGoal(deriveShotMapData('Lionel Messi'))
 
+team_names = ['Argentina', 'France', 'Croatia']
+# Convert to list of dictionaries for DataTable
+team_data = [{'team': team, 'select': False} for team in team_names]
 
 ####################### PAGE LAYOUT #############################
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -205,7 +212,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 layout = html.Div(children=[
     dbc.Container([
         # Row for the plots
-    html.Div([
+        html.Div([
             # First plot
             html.Div(
                 dcc.Graph(id='graph-output', figure=default_pitch_fig),
@@ -218,53 +225,88 @@ layout = html.Div(children=[
             )
         ], style={'display': 'flex', 'flex-direction': 'row'}),
 
-
-        dbc.Row([
-            dbc.Col(dcc.Dropdown(
-                id='player-dropdown',
-                options=[
-                    {'label': 'Lionel Messi', 'value': 'Lionel Messi'},
-                    {'label': 'Cristiano Ronaldo', 'value': 'Cristiano Ronaldo'},
-                    # Add more player options as needed
-                ],
-                value='Lionel Messi'  # Default selected player
-            ), width=8),
-        ]),
+        html.Div([
+            dbc.Row([
+                dbc.Col(html.Div(
+                    dcc.Dropdown(
+                        id='player-dropdown',
+                        options=[
+                            {'label': 'Lionel Messi', 'value': 'Lionel Messi'},
+                            {'label': 'Cristiano Ronaldo', 'value': 'Cristiano Ronaldo'},
+                            # Add more player options as needed
+                        ],
+                        value='Lionel Messi'  # Default selected player
+                    ), style={'display': 'inline-block', 'width': '120%'}), width=8),
+            ])
+        ], style={'display': 'flex', 'flex-direction': 'row'}),
 
         # Row for DataTable
+        html.Div([
+            dbc.Row([
+                dbc.Col(html.Div(
+                    dash_table.DataTable(
+                        id='table',
+                        columns=[{"name": i, "id": i} for i in refinedShotData.columns],
+                        data=shotData.to_dict('records'),
+                        style_table={'overflowX': 'auto'},
+                        style_header={
+                            'backgroundColor': 'rgb(230, 230, 230)',
+                            'fontWeight': 'bold'
+                        },
+                        style_cell={
+                            'textAlign': 'center',
+                            'minWidth': '50px',
+                            'maxWidth': '100px',
+                            'fontSize': '14px'
+                        },
+                        style_data_conditional=[
+                            {'if': {'row_index': 'odd'},
+                             'backgroundColor': 'rgb(248, 248, 248)'},
+                            {'if': {'column_id': 'Goals'},
+                             'fontWeight': 'bold',
+                             'backgroundColor': 'rgb(255, 204, 204)'},
+                            {'if': {'filter_query': '{outcome_name} eq "Goal"'},
+                             'backgroundColor': 'rgba(34, 139, 34, 0.5)',
+                             'color': 'white'},
+                            {'if': {'filter_query': '{outcome_name} eq "Off T"'},
+                             'backgroundColor': 'rgba(255, 0, 0, 0.5)',
+                             'color': 'white'},
+                            {'if': {'filter_query': '{outcome_name} eq "Saved"'},
+                             'backgroundColor': 'rgba(255, 165, 0, 0.5)',
+                             'color': 'white'}
+                        ],
+                    ), style={'display': 'inline-block', 'width': '70%'}), width=8)
+            ])
+        ], style={'display': 'flex', 'flex-direction': 'row'})
+    
+        html.Div([
+            dbc.Row([
+                dbc.Col(html.Div(
+                    dcc.Dropdown(
+                        id='player-dropdown',
+                        options=[
+                            {'label': 'Lionel Messi', 'value': 'Lionel Messi'},
+                            {'label': 'Cristiano Ronaldo', 'value': 'Cristiano Ronaldo'},
+                            # Add more player options as needed
+                        ],
+                        value='Lionel Messi'  # Default selected player
+                    ), style={'display': 'inline-block', 'width': '120%'}), width=8),
+            ])
+        ], style={'display': 'flex', 'flex-direction': 'row'}),        
+
         dbc.Row([
             dbc.Col(dash_table.DataTable(
-                id='table',
-                columns=[{"name": i, "id": i} for i in refinedShotData.columns],
-                data=shotData.to_dict('records'),
-                style_table={'overflowX': 'auto'},
-                style_header={
-                    'backgroundColor': 'rgb(230, 230, 230)',
-                    'fontWeight': 'bold'
-                },
-                style_cell={
-                    'textAlign': 'center',
-                    'minWidth': '50px',
-                    'maxWidth': '100px',
-                    'fontSize': '14px'
-                },
-                style_data_conditional=[
-                    {'if': {'row_index': 'odd'},
-                     'backgroundColor': 'rgb(248, 248, 248)'},
-                    {'if': {'column_id': 'Goals'},
-                     'fontWeight': 'bold',
-                     'backgroundColor': 'rgb(255, 204, 204)'},
-                    {'if': {'filter_query': '{outcome_name} eq "Goal"'},
-                     'backgroundColor': 'rgba(34, 139, 34, 0.5)',
-                     'color': 'white'},
-                    {'if': {'filter_query': '{outcome_name} eq "Off T"'},
-                     'backgroundColor': 'rgba(255, 0, 0, 0.5)',
-                     'color': 'white'},
-                    {'if': {'filter_query': '{outcome_name} eq "Saved"'},
-                     'backgroundColor': 'rgba(255, 165, 0, 0.5)',
-                     'color': 'white'}
+                id='team-table',
+                columns=[
+                    {'name': 'Select', 'id': 'select', 'selectable': True, 'editable': True, 'type': 'boolean'},
+                    {'name': 'Team', 'id': 'team'}
                 ],
-            ), width=8)
+                data=team_data,
+                editable=True,  # Allow table editing
+                row_selectable='multi',  # Allow multiple rows to be selected
+                style_table={'overflowX': 'auto'},
+                style_cell={'textAlign': 'center'},
+            ), width=12)
         ])
     ])
 ])
