@@ -63,6 +63,8 @@ def deriveShotMapData(playername):
 
 def makePitch(PlayerNames):
     img = Image.open('pages/New2.png')
+
+    
     fig = go.Figure()
 
     for name in PlayerNames:
