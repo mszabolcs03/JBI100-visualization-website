@@ -9,7 +9,7 @@ from plotly.tools import mpl_to_plotly
 import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output, callback
 
-
+from getpitch import get_pitch
 
 dash.register_page(__name__, path='/timeline', name="DYNAMIC PLAY TIMELINE")
 
@@ -23,30 +23,27 @@ df, df_related, df_freeze, df_tactics = parser.event(3869685)
 
 
 ##################
-initial_player_name = "Gonzalo Ariel Montiel"
 list_of_accepted_actions = ["Pass", 'Dribble', 'Shot', 'Shield']
 list_of_required_colums = ['type_name', 'x', 'y', 'end_x', 'end_y', "player_name", 'minute', 'second', "team_name"]
 
-#filter actions
-mask_action = df['type_name'].isin(list_of_accepted_actions)
-#select player
-mask_player = df.player_name == initial_player_name
-#filter time
-mask_time_min = df.minute >= -1
-mask_time_max = df.minute <= 1000
-#combine filters
-mask_master = mask_action & mask_player & mask_time_min & mask_time_max
-#get filtered dataframe
-df_actions = df.loc[mask_master, list_of_required_colums]
+mask_player = df.player_name == ""
 
-#create figure
+df_actions = df[list_of_required_colums]
+
+#create base figure
 fig = px.scatter(
-    df_actions,
+    df.loc[mask_player, list_of_required_colums],
     x='x',
     y='y'
 )
 
-fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
+fig.update_layout(hovermode='closest')
+fig.update_layout(shapes = get_pitch())
+fig.update_layout(xaxis_range=[3, 120])
+fig.update_layout(yaxis_range=[0, 80])
+fig.update_layout(margin=dict(l=2,r=2,b=0.5,t=2))
+fig.update_layout(plot_bgcolor='rgb(80, 80, 80)')
+fig.update_layout(xaxis_showgrid=False, yaxis_showgrid=False)
 
 fig.update_xaxes(showticklabels=False, title=None)
 fig.update_yaxes(showticklabels=False, title=None)
@@ -68,7 +65,6 @@ layout = html.Div(children=[
             dcc.Dropdown(
                 id='timeline-player-dropdown',
                 options=[{'label': "all", 'value': "all"}] + [{'label': player, 'value': player} for player in df['player_name'].unique()],
-                # value=initial_player_name,
                 clearable=False,
                 placeholder="Select player(s)"
             )
@@ -210,7 +206,7 @@ def update_graph(selected_team, selected_player, min_time, max_time):
     fig.update_layout(shapes = get_pitch())
     fig.update_layout(xaxis_range=[3, 120])
     fig.update_layout(yaxis_range=[0, 80])
-    fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
+    fig.update_layout(margin=dict(l=2,r=2,b=0.5,t=2))
     fig.update_layout(plot_bgcolor='rgb(80, 80, 80)')
     fig.update_layout(xaxis_showgrid=False, yaxis_showgrid=False)
 

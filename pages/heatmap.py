@@ -37,19 +37,20 @@ df_actions = df.loc[mask_master, ["player_name", "type_name", 'x', 'y', 'end_x',
 
 df_actions_plus = df_actions[["x", "y"]]
 
-for i in range(1000):
-    df_actions_plus["x"] = df_actions_plus["x"] + random.gauss(0, 1)
-    df_actions_plus["y"] = df_actions_plus["y"] + random.gauss(0, 1)
-
-    df_actions = pd.concat([df_actions, df_actions_plus], ignore_index=True)
-df_actions[["x", "y"]]
-
 fig = px.density_heatmap(df_actions[["x", "y"]], x='x', y='y', nbinsx=100, nbinsy=400, range_color=[0, 10])
 
-fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
+# fig.update(layout_showlegend=False)
+# fig.update(layout_coloraxis_showscale=False)
 
-fig.update_xaxes(showticklabels=False, title=None)
-fig.update_yaxes(showticklabels=False, title=None)
+# fig.layout.xaxis.fixedrange = True
+# fig.layout.yaxis.fixedrange = True
+
+# fig.update_layout(shapes = get_pitch())
+# fig.update_layout(xaxis_range=[0, 120])
+# fig.update_layout(yaxis_range=[0, 80])
+# fig.update_layout(margin=dict(l=2,r=2,b=0.5,t=2))
+# fig.update_layout(plot_bgcolor='rgb(80, 80, 80)')
+# fig.update_layout(xaxis_showgrid=False, yaxis_showgrid=False)
 
 # Page layout
 layout = html.Div([
@@ -150,17 +151,14 @@ def update_graph(selected_team, selected_player):
     
     fig.update_layout(hovermode='closest')
     # fig.update_layout(shapes = get_pitch())
-    fig.update_layout(xaxis_range=[3, 120])
+    fig.update_layout(xaxis_range=[0, 120])
     fig.update_layout(yaxis_range=[0, 80])
-    fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
+    fig.update_layout(margin=dict(l=2,r=2,b=0.5,t=2))
     fig.update_layout(plot_bgcolor='rgb(80, 80, 80)')
     fig.update_layout(xaxis_showgrid=False, yaxis_showgrid=False)
 
     fig.update_xaxes(showticklabels=False, title=None)
     fig.update_yaxes(showticklabels=False, title=None)
-
-    # fig.update_traces(marker=dict(color='black'))
-
 
     return fig
 
