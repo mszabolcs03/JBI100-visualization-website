@@ -56,6 +56,8 @@ fig.update_yaxes(showticklabels=False, title=None)
 ####################### PAGE LAYOUT #############################
 layout = html.Div(children=[
     html.Div(id="content", children=[
+        html.H1('Dynamic Play Timeline'),
+
         html.Div(id="timeline-dropdowns", children=[
             dcc.Dropdown(
                 id='timeline-team-dropdown',
@@ -209,7 +211,7 @@ def update_graph(selected_team, selected_player, min_time, max_time):
     fig.update_layout(xaxis_range=[3, 120])
     fig.update_layout(yaxis_range=[0, 80])
     fig.update_layout(margin=dict(l=0,r=0,b=0,t=0))
-    fig.update_layout(plot_bgcolor='rgb(0, 200, 0)')
+    fig.update_layout(plot_bgcolor='rgb(80, 80, 80)')
     fig.update_layout(xaxis_showgrid=False, yaxis_showgrid=False)
 
     fig.update_xaxes(showticklabels=False, title=None)

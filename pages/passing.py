@@ -1,13 +1,11 @@
 import pandas as pd
 import dash
-from dash import dcc, html, callback
+from dash import html, dcc, callback, Input, Output
 import plotly.express as px
 from dash.dependencies import Input, Output
 from mplsoccer import Pitch, Sbopen, VerticalPitch
+import plotly.graph_objects as go
 
-
-dash.register_page(__name__, path='/passing', name="PASSING NETWORK")
-"""
 ####################### LOAD DATASET #############################
 # Load the dataset
 parser = Sbopen()
@@ -16,41 +14,32 @@ competitions = parser.competition()
 # Select the World Cup Final
 df, df_related, df_freeze, df_tactics = parser.event(3869685)
 
-####################### PAGE LAYOUT #############################
-layout = html.Div(children=[
-    html.Div(id="content", children=[
-
-    ])
-])
-"""
-import dash
-from dash import html, dcc, callback, Input, Output
-import plotly.graph_objects as go
-import pandas as pd
-from mplsoccer import Sbopen
-
-# Initialize the parser
-parser = Sbopen()
-
-# Load the dataset
-df, df_related, df_freeze, df_tactics = parser.event(3869685)
 dash.register_page(__name__, path='/passing', name="PASSING NETWORK")
 
 # Page layout
 layout = html.Div([
-    html.H1('Passing Network Visualization'),
-    dcc.Dropdown(
-        id='team-dropdown',  # Corrected ID
-        options=[{'label': team, 'value': team} for team in df['team_name'].unique()],
-        value='Argentina'  # Default value
-    ),
-    dcc.Graph(id='passing-network-graph')
+    html.Div(id="content", children=[
+        html.H1('Passing Network Visualization'),
+
+        html.Div(id="passing-dropdowns", children=[
+            dcc.Dropdown(
+                id='passing-team-dropdown',  # Corrected ID
+                options=[{'label': team, 'value': team} for team in df['team_name'].unique()],
+                value='Argentina'  # Default value
+            )
+        ]),
+
+        dcc.Graph(
+            id='passing-network-graph',
+            config={ 'modeBarButtonsToRemove': ['zoom', 'pan'] }
+        )
+    ])
 ])
 
 # Callback to update graph based on selected team
 @callback(
     Output('passing-network-graph', 'figure'),
-    [Input('team-dropdown', 'value')]  # Corrected ID
+    [Input('passing-team-dropdown', 'value')]
 )
 def update_graph(selected_team):
     team_id = df[df['team_name'] == selected_team]['team_id'].iloc[0]
@@ -77,34 +66,21 @@ def update_graph(selected_team):
     # Prepare the graph
     fig = go.Figure()
 
-    # Draw the football pitch
-    pitch = dict(
-       type="rect",
-       xref="paper", yref="paper",
-      x0=0, y0=0, x1=1, y1=1,
-      fillcolor="lightgreen",
-    layer="below"
-    )
-
-    # Add the pitch to the layout
-    fig.update_layout(shapes=[pitch])
-
-    # Set axes ranges
-    fig.update_xaxes(range=[0, 120], showgrid=False, zeroline=False)
-    fig.update_yaxes(range=[0, 80], showgrid=False, zeroline=False)
 
     # Adding nodes (players) to the graph
     for index, row in average_positions.iterrows():
         player_name = df[df['player_id'] == row['player_id']]['player_name'].iloc[0]
         total_passes = player_pass_counts[player_pass_counts['player_id'] == row['player_id']]['total_passes'].iloc[0]
         color_intensity = player_pass_counts[player_pass_counts['player_id'] == row['player_id']]['color_intensity'].iloc[0]
-        fig.add_trace(go.Scatter(x=[row['x']], y=[row['y']], mode='markers+text', 
-                                 text=player_name, 
-                                 name=player_name,
-                                 marker=dict(size=15, color=f'rgba(180, 30, 0, {color_intensity})', 
-                                             showscale=False),
-                                 hoverinfo='text',
-                                 hovertext=f'{player_name}<br>Total Passes: {total_passes}'))
+        fig.add_trace(go.Scatter(
+            x=[row['x']], y=[row['y']], mode='markers+text', 
+            text=player_name, 
+            name=player_name,
+            # textfont=dict(color='rgba(255, 255, 255)'),
+            marker=dict(size=15, color=f'rgba(255, 0, 0, {color_intensity})', showscale=False),
+            hoverinfo='text',
+            hovertext=f'{player_name}<br>Total Passes: {total_passes}'
+        ))
 
     # Adding edges (passes) to the graph
     max_pass_count = pass_counts['pass_count'].max()
@@ -118,16 +94,163 @@ def update_graph(selected_team):
             fig.add_trace(go.Scatter(x=[start_player['x'].values[0], end_player['x'].values[0]], 
                                     y=[start_player['y'].values[0], end_player['y'].values[0]], 
                                     mode='lines', 
-                                    line=dict(width=line_width, color=f'rgba(33, 180, 165, {pass_intensity})')))
+                                    line=dict(width=line_width, color=f'rgba(255, 255, 255, {pass_intensity})')))
 
     # Update layout
-    fig.update_layout(title=f'Passing Network for {selected_team}',
-                      showlegend=False,
-                      hoverlabel=dict(bgcolor="white", font_size=12, font_family="Rockwell"),
-                      xaxis_title="Field Width",
-                      yaxis_title="Field Length")
+    fig.update_layout(
+        showlegend=False,
+        hoverlabel=dict(bgcolor="white", font_size=12),
+        hovermode='closest',
+        shapes = get_pitch(),
+        xaxis_range=[3, 120],
+        yaxis_range=[0, 80],
+        margin=dict(l=0,r=0,b=0,t=0),
+        plot_bgcolor='rgb(100, 100, 100)',
+        xaxis_showgrid=False, yaxis_showgrid=False
+    )
+    
+    fig.layout.xaxis.fixedrange = True
+    fig.layout.yaxis.fixedrange = True
+    
+    fig.update_xaxes(showticklabels=False, title=None)
+    fig.update_yaxes(showticklabels=False, title=None)
 
-    # Show the figure
     return fig
 
 
+def get_pitch():
+    pitch = []
+    pitch.append({
+            'type': 'rect',
+            'x0': 0,
+            'x1': 25,
+            'y0': 13,
+            'y1': 66.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 0,
+            'x1': 10.5,
+            'y0': 27.5,
+            'y1': 52,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 2,
+            'x1': 3.5,
+            'y0': 35,
+            'y1': 44.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgb(255,255,255)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 98.5,
+            'x1': 121,
+            'y0': 13,
+            'y1': 66.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 112.5,
+            'x1': 121,
+            'y0': 27.5,
+            'y1': 52,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 119.5,
+            'x1': 121,
+            'y0': 35,
+            'y1': 44.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgb(255,255,255)"
+    })
+    pitch.append({
+            'type': 'rect',
+            'x0': 61.5,
+            'x1': 61.5,
+            'y0': 0,
+            'y1': 100,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'circle',
+            'x0': 49.5,
+            'x1': 73.5,
+            'y0': 27.5,
+            'y1': 52,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'circle',
+            'x0': 0,
+            'x1': 5,
+            'y0': -2.5,
+            'y1': 2.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'circle',
+            'x0': 117.5,
+            'x1': 122.5,
+            'y0': -2.5,
+            'y1': 2.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+        'type': 'circle',
+        'x0': 0,
+        'x1': 5,
+        'y0': 77.5,
+        'y1': 82.5,
+        'xref': 'x',
+        'yref': 'y',
+        'line': {'color': "rgb(255,255,255)"},
+        'fillcolor': "rgba(0,0,0,0)"
+    })
+    pitch.append({
+            'type': 'circle',
+            'x0': 117.5,
+            'x1': 122.5,
+            'y0': 77.5,
+            'y1': 82.5,
+            'xref': 'x',
+            'yref': 'y',
+            'line': {'color': "rgb(255,255,255)"},
+            'fillcolor': "rgba(0,0,0,0)"
+    })
+
+    return pitch

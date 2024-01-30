@@ -107,6 +107,27 @@ body {
 
 
 
+/* // // PASSING NETWORK // //  */
+#passing-network-graph {
+    float: left;
+    width: calc(60vw - 15px);
+    height: calc((60vw - 15px) / 3 * 2);
+}
+
+#passing-dropdowns {
+    /* background-color: #FF4D5C; */
+    width: fit-content;
+    height: fit-content;
+    float: right;
+}
+    #passing-player-dropdown, #passing-team-dropdown {
+        color: black;
+        width: 20vw;
+        /* background-color: #0EDFA7; */
+        margin-bottom: 15px;
+    }
+
+
 /* // // TIMELINE // //  */
 #timeline-dropdowns {
     /* background-color: #FF4D5C; */
