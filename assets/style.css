@@ -127,6 +127,25 @@ body {
         margin-bottom: 15px;
     }
 
+/* // // HEATMAP // //  */
+#heatmap-graph {
+    float: left;
+    width: calc(60vw - 15px);
+    height: calc((60vw - 15px) / 3 * 2);
+}
+#heatmap-dropdowns {
+    /* background-color: #FF4D5C; */
+    width: fit-content;
+    height: fit-content;
+    float: right;
+}
+    #heatmap-player-dropdown, #heatmap-team-dropdown {
+        color: black;
+        width: 20vw;
+        /* background-color: #0EDFA7; */
+        margin-bottom: 15px;
+    }
+
 
 /* // // TIMELINE // //  */
 #timeline-dropdowns {
@@ -137,15 +156,15 @@ body {
 }
     #timeline-player-dropdown, #timeline-team-dropdown {
         color: black;
-        width: 30vw;
+        width: 25vw;
         /* background-color: #0EDFA7; */
         margin-bottom: 15px;
     }
 
 #pitch-figure-timeline {
     float: left;
-    width: calc(50vw - 15px);
-    height: calc((50vw - 15px) / 3 * 2);
+    width: calc(55vw - 15px);
+    height: calc((55vw - 15px) / 3 * 2);
 }
 
 #timeline-sliders {
