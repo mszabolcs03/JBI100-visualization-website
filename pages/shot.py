@@ -289,16 +289,16 @@ layout = html.Div(children=[
 
         html.Div([
             html.Div([
-                html.H2("Location of taken shots"),
+                html.H2("Location of taken shots", style={'font-size': '20px', 'font-weight': 'normal'}),
                 dcc.Graph(id='graph-output', figure = default_pitch_fig)],
-                style={'display': 'inline-block', 'width': '40%', 'height': '30%', 'marginLeft': '10%'}
+                style={'display': 'inline-block', 'width': '40%', 'height': '80%', 'marginLeft': '5%'}
             ),
             html.Div([
-                html.H3("Placement of taken shots"),
+                html.H3("Placement of taken shots", style={'font-size': '20px', 'font-weight': 'normal'}),
                 dcc.Graph(id='shot-map-image', figure=default_shot_map_fig)],
-                style={'display': 'inline-block', 'width': '40%' ,'height': '30%'}
+                style={'display': 'inline-block', 'width': '40%' ,'height': '100%', 'marginLeft': '3%'}
             )
-        ], style={'display': 'flex', 'flex-direction': 'row'}),
+        ], style={'display': 'flex'}),
 
         # Row for the existing DataTable
         html.Div([
@@ -312,7 +312,7 @@ layout = html.Div(children=[
                         style_table={
                             'overflowX': 'auto', 
                             'overflowY': 'auto',
-                            'maxHeight': '300px'
+                            'maxHeight': '350px'
                         },
                         style_header={
                             'backgroundColor': '#414042',  # Dark grey background color
@@ -322,8 +322,8 @@ layout = html.Div(children=[
                         style_cell={
                             'textAlign': 'center',
                             'minWidth': '50px',
-                            'maxWidth': '100px',
-                            'fontSize': '14px'
+                            'maxWidth': '150px',
+                            'fontSize': '15px'
                         },
                          style_data_conditional=[
                             {'if': {'row_index': 'odd'},
@@ -348,9 +348,9 @@ layout = html.Div(children=[
                              'color': 'white'}
 
                         ],
-                    ), style={'display': 'inline-block', 'width': '100%'}), width=12)
-            ])
-,
+                    ), style={'display': 'inline-block', 'width': '80%','marginLeft': '4%', 'marginTop': '0%'}), width=12)
+            ]),
+
             html.Div(
                 dbc.Row([
                     dbc.Col(
@@ -367,31 +367,32 @@ layout = html.Div(children=[
                             style_cell={
                                 'textAlign': 'center',
                                 'color': 'black',  # Text color set to black
-                                'backgroundColor': 'white',  # Background color set to white
+                                'backgroundColor': '#FFFFE0',  # Background color set to white
                                 'minWidth': '80px', 'maxWidth': '350px', 'fontSize': '14px'
                             },
                         ),
-                        width=6
+                        width=9
                     )
                 ])  # End of dbc.Row
             ),
 
-            html.Div(id='selected-indices', style={'display': 'none'}),
+            html.Div(id='selected-indices', style={'display': 'none', 'marginTop': '1%', 'backgroundColor': '#FFFFE0'}),
 
             html.Div(
                 dcc.Dropdown(
                 id='simple-dropdown',
                 options=dropdown_options,  # Updated options
                 value=argentina_player_names[0] if argentina_player_names else None,
-                style={'color': 'black', 'width': '300px'}  # Add this style attribute to the dropdown
+                style={'color': 'black', 'width': '300px', 'backgroundColor': '#FFFFE0'}  # Add this style attribute to the dropdown
                 )
             ),
 
-            html.Button("Generate graphs", id='my-button'),
+            html.Button("Generate Plots", id='my-button', 
+            style={'height': '100px', 'width': '200px', 'font-size': '25px', 'backgroundColor': '#FFFFE0'}),
 
             html.Div(id='dropdown-output2'),
 
-        ], style={'display': 'flex', 'flex-direction': 'row'}),
+        ], style={'display': 'flex', 'flex-direction': 'row', 'marginTop': '4%', 'height' : '100px'}),
 
     ]),
 ])
