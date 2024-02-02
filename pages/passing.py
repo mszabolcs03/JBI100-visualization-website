@@ -75,7 +75,7 @@ layout = html.Div([
     Input('passing-match-dropdown', 'value')
 )
 def update_team_dropdown(selected_match_name):
-    print(selected_match_name)
+    #print(selected_match_name)
 
     try:
         chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
@@ -89,6 +89,28 @@ def update_team_dropdown(selected_match_name):
     return teams_in_match
 
 # Callback to update graph based on selected team
+
+
+name_mapping = {
+    'Nahuel Molina Lucero': 'N. Molina',
+    'Rodrigo Javier De Paul': 'R. De Paul',
+    'Cristian Gabriel Romero': 'C. Romero',
+    'Nicolás Hernán Otamendi': 'N. Otamendi',
+    'Nicolás Alejandro Tagliafico': 'N. Tagliafico',
+    'Alexis Mac Allister': 'A. Mac Allister',
+    'Damián Emiliano Martínez': 'D. Martínez',
+    'Lionel Andrés Messi Cuccittini': 'L. Messi',
+    'Ángel Fabián Di María Hernández': 'Á. Di María',
+    'Julián Álvarez': 'J. Álvarez',
+    'Enzo Fernandez': 'E. Fernandez',
+    'Marcos Javier Acuña': 'M. Acuña',
+    'Gonzalo Ariel Montiel': 'G. Montiel',
+    'Lautaro Javier Martínez': 'L. Martínez',
+    'Leandro Daniel Paredes': 'L. Paredes',
+    'Paulo Bruno Exequiel Dybala': 'P. Dybala',
+    'Germán Alejandro Pezzella': 'G. Pezzella'
+}
+
 @callback(
     Output('passing-network-graph', 'figure'),
     Input('passing-match-dropdown', 'value'),
@@ -106,6 +128,9 @@ def update_graph(selected_match_name, selected_team):
         team_id = df[df['team_name'] == selected_team]['team_id'].iloc[0]
     except:
         team_id = 0 #default team id
+
+    if selected_team == 'Argentina':
+        df['player_name'] = df['player_name'].map(name_mapping).fillna(df['player_name'])
 
     pass_events = df[(df['type_name'] == 'Pass') & (df['team_id'] == team_id)]
 
@@ -132,18 +157,33 @@ def update_graph(selected_match_name, selected_team):
 
 
     # Adding nodes (players) to the graph
+    annotations = []
+    subs = ['M. Acuña','G. Montiel','L. Martínez','L. Paredes', 'P. Dybala', 'G. Pezzella']
+
     for index, row in average_positions.iterrows():
         player_name = df[df['player_id'] == row['player_id']]['player_name'].iloc[0]
+        
         total_passes = player_pass_counts[player_pass_counts['player_id'] == row['player_id']]['total_passes'].iloc[0]
         color_intensity = player_pass_counts[player_pass_counts['player_id'] == row['player_id']]['color_intensity'].iloc[0]
+
+        # Adding player node
         fig.add_trace(go.Scatter(
-            x=[row['x']], y=[row['y']], mode='markers+text', 
-            text=player_name, 
-            name=player_name,
-            # textfont=dict(color='rgba(255, 255, 255)'),
+            x=[row['x']], y=[row['y']],
+            mode='markers',
             marker=dict(size=15, color=f'rgba(255, 0, 0, {color_intensity})', showscale=False),
             hoverinfo='text',
-            hovertext=f'{player_name}<br>Total Passes: {total_passes}'
+            hovertext=f'{player_name}<br>Total Passes: {total_passes}',
+        ))
+
+        # Adding annotation for player name
+        annotations.append(dict(
+            x=row['x'], y=row['y'],
+            xref="x", yref="y",
+            text=player_name,
+            showarrow=False,
+            font=dict(size=12, color='black', family="Arial"),
+            textangle=0,
+            xanchor='center', yanchor='bottom'  # Adjust the positioning
         ))
 
     # Adding edges (passes) to the graph
@@ -162,6 +202,7 @@ def update_graph(selected_match_name, selected_team):
 
     # Update layout
     fig.update_layout(
+        annotations=annotations,
         showlegend=False,
         hoverlabel=dict(bgcolor="white", font_size=12),
         hovermode='closest',

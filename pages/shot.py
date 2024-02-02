@@ -68,6 +68,26 @@ team_lists = {}
 argentina_player_names = df[(df['team_name'] == 'Argentina') & (df['player_name'].notna())]['player_name'].unique().tolist()
 team_lists['Argentina_Player_Names'] = argentina_player_names
 dropdown_options = [{'label': name, 'value': name} for name in argentina_player_names]
+name_mapping = {
+    'Nahuel Molina Lucero': 'N. Molina',
+    'Rodrigo Javier De Paul': 'R. De Paul',
+    'Cristian Gabriel Romero': 'C. Romero',
+    'Nicolás Hernán Otamendi': 'N. Otamendi',
+    'Nicolás Alejandro Tagliafico': 'N. Tagliafico',
+    'Alexis Mac Allister': 'A. Mac Allister',
+    'Damián Emiliano Martínez': 'D. Martínez',
+    'Lionel Andrés Messi Cuccittini': 'L. Messi',
+    'Ángel Fabián Di María Hernández': 'Á. Di María',
+    'Julián Álvarez': 'J. Álvarez',
+    'Enzo Fernandez': 'E. Fernandez',
+    'Marcos Javier Acuña': 'M. Acuña',
+    'Gonzalo Ariel Montiel': 'G. Montiel',
+    'Lautaro Javier Martínez': 'L. Martínez',
+    'Leandro Daniel Paredes': 'L. Paredes',
+    'Paulo Bruno Exequiel Dybala': 'P. Dybala',
+    'Germán Alejandro Pezzella': 'G. Pezzella'
+}
+dropdown_options = [{'label': name_mapping.get(name['value'], name['value']), 'value': name['value']} for name in dropdown_options]
 
 def deriveShotMapData(indices, playername):
     all_shots = []  # List to store shot data from each DataFrame
@@ -279,6 +299,9 @@ team_data = {'France':'Final',
               'Mexico' : 'Group Stage: Game 2',
               'Saudi Arabia' : 'Group Stage: Game 1'}
 table_data = [{'team': team, 'stage': stage} for team, stage in team_data.items()]
+
+#for player_name in argentina_player_names:
+    #print(player_name)
 
 ####################### PAGE LAYOUT #############################
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
