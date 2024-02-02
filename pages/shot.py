@@ -291,7 +291,7 @@ layout = html.Div(children=[
             html.Div([
                 html.H2("Location of taken shots"),
                 dcc.Graph(id='graph-output', figure = default_pitch_fig)],
-                style={'display': 'inline-block', 'width': '40%', 'height': '30%'}
+                style={'display': 'inline-block', 'width': '40%', 'height': '30%', 'marginLeft': '10%'}
             ),
             html.Div([
                 html.H3("Placement of taken shots"),
