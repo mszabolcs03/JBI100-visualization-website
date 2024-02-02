@@ -18,9 +18,24 @@ dash.register_page(__name__, path='/timeline', name="DYNAMIC PLAY TIMELINE")
 parser = Sbopen()
 competitions = parser.competition()
 
-# Select the World Cup Final
-df, df_related, df_freeze, df_tactics = parser.event(3869685)
+# select world cup
+world_cup = competitions[competitions['competition_name'] == 'FIFA World Cup']
+world_cup_id = world_cup['competition_id'].iloc[0]
+season_id = world_cup['season_id'].iloc[0]
 
+# get list of matches
+matches = parser.match(competition_id=world_cup_id, season_id = season_id)
+
+# get list of match names
+match_names = []
+for i in range(len(matches)):
+    match_names.append(str(matches.loc[i]["home_team_country_name"] + " vs. " + matches.loc[i]["away_team_country_name"]))
+
+# choose match
+chosen_match_id = matches[(matches["home_team_country_name"] == match_names[0].split(" ")[0]) & (matches["away_team_country_name"] == match_names[0].split(" ")[2])]["match_id"][0]
+
+#create df of chosen match
+df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
 
 ##################
 list_of_accepted_actions = ["Pass", 'Dribble', 'Shot', 'Shield']
@@ -56,6 +71,14 @@ layout = html.Div(children=[
         html.H1('Dynamic Play Timeline'),
 
         html.Div(id="timeline-dropdowns", children=[
+            dcc.Dropdown(
+                id='timeline-match-dropdown',
+                options=[
+                    {'label': match, 'value': match} for match in match_names
+                ],
+                clearable=False,
+                placeholder="Select match"
+            ),
             dcc.Dropdown(
                 id='timeline-team-dropdown',
                 options=[{'label': "all", 'value': "all"}] + [{'label': team, 'value': team} for team in df['team_name'].unique()],
@@ -108,12 +131,32 @@ layout = html.Div(children=[
     ])
 ])
 
+# UPDATE TEAM DROPDOWN
+@callback(
+    Output('timeline-team-dropdown', 'options'),
+    Input('timeline-match-dropdown', 'value')
+)
+def update_team_dropdown(selected_match_name):
+    print(selected_match_name)
+
+    chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
+    teams_in_match = [team for team in df["team_name"].dropna().unique()]
+
+    return teams_in_match
+
 # UPDATE PLAYER DROPDOWN
 @callback(
     Output('timeline-player-dropdown', 'options'),
+    Input('timeline-match-dropdown', 'value'),
     Input('timeline-team-dropdown', 'value')
 )
-def update_player_dropdown(selected_team):
+def update_player_dropdown(selected_match_name, selected_team):
+    chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
     if selected_team == "all":
         mask_team = df.team_name == df.team_name
     else:
@@ -130,9 +173,13 @@ def update_player_dropdown(selected_team):
 @callback(
     Output('timeline-min-slider', 'marks'),
     Output('timeline-max-slider', 'marks'),
+    Input('timeline-match-dropdown', 'value'),
     Input('timeline-player-dropdown', 'value')
 )
-def update_slider_range(selected_player):
+def update_slider_range(selected_match_name, selected_player):
+    chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
     if selected_player == None:
         return {0: {'label': 'start'}, df["minute"].max(): {'label': 'end'}}, {0: {'label': 'start'}, df["minute"].max(): {'label': 'end'}}
     #filter actions
@@ -163,12 +210,16 @@ def update_slider_range(selected_player):
 # UPDATE FIGURE
 @callback(
     Output('pitch-figure-timeline', 'figure'),
+    Input('timeline-match-dropdown', 'value'),
     Input('timeline-team-dropdown', 'value'),
     Input('timeline-player-dropdown', 'value'),
     Input('timeline-min-slider', 'value'),
     Input('timeline-max-slider', 'value')
 )
-def update_graph(selected_team, selected_player, min_time, max_time):
+def update_graph(selected_match_name, selected_team, selected_player, min_time, max_time):
+    chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
     #filter actions
     mask_action = df['type_name'].isin(list_of_accepted_actions)
         #select team
@@ -202,7 +253,7 @@ def update_graph(selected_team, selected_player, min_time, max_time):
     fig.layout.yaxis.fixedrange = True
     
     fig.update_layout(hovermode='closest')
-    fig.update_layout(annotations = get_arrows(df_actions))
+    fig.update_layout(annotations = get_arrows(df_actions, chosen_match_id))
     fig.update_layout(shapes = get_pitch())
     fig.update_layout(xaxis_range=[3, 120])
     fig.update_layout(yaxis_range=[0, 80])
@@ -217,12 +268,14 @@ def update_graph(selected_team, selected_player, min_time, max_time):
 
     return fig
 
-def get_arrows(df_actions):
+def get_arrows(df_actions, chosen_match_id):
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
     arrows = []
 
     for i in range(len(df_actions["x"])):
         # df_actions.iloc[i]
-        if df_actions.iloc[i]["team_name"] == "Argentina":
+        if df_actions.iloc[i]["team_name"] == df["team_name"].dropna().unique()[0]:
             arrow_color = "rgb(8, 129, 197)"
         else:
             arrow_color = "rgb(252, 184, 39)"

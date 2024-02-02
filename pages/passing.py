@@ -5,6 +5,10 @@ import plotly.express as px
 from dash.dependencies import Input, Output
 from mplsoccer import Pitch, Sbopen, VerticalPitch
 import plotly.graph_objects as go
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 
 from getpitch import get_pitch
 

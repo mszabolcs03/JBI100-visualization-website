@@ -154,7 +154,7 @@ body {
     height: fit-content;
     float: right;
 }
-    #timeline-player-dropdown, #timeline-team-dropdown {
+    #timeline-player-dropdown, #timeline-team-dropdown, #timeline-match-dropdown {
         color: black;
         width: 25vw;
         /* background-color: #0EDFA7; */
