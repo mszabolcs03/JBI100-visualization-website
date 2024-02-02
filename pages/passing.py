@@ -105,7 +105,7 @@ def update_graph(selected_match_name, selected_team):
     try:
         team_id = df[df['team_name'] == selected_team]['team_id'].iloc[0]
     except:
-        team_id = 779 #default team id
+        team_id = 0 #default team id
 
     pass_events = df[(df['type_name'] == 'Pass') & (df['team_id'] == team_id)]
 
