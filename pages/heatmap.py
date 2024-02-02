@@ -21,8 +21,25 @@ from getpitch import get_pitch
 parser = Sbopen()
 competitions = parser.competition()
 
-# Select the World Cup Final
-df, df_related, df_freeze, df_tactics = parser.event(3869685)
+# select world cup
+world_cup = competitions[competitions['competition_name'] == 'FIFA World Cup']
+world_cup_id = world_cup['competition_id'].iloc[0]
+season_id = world_cup['season_id'].iloc[0]
+
+# get list of matches
+matches = parser.match(competition_id=world_cup_id, season_id = season_id)
+
+# get list of match names
+match_names = []
+for i in range(len(matches)):
+    match_names.append(str(matches.loc[i]["home_team_country_name"] + " vs. " + matches.loc[i]["away_team_country_name"]))
+
+# choose match
+chosen_match_id = matches[(matches["home_team_country_name"] == match_names[0].split(" ")[0]) & (matches["away_team_country_name"] == match_names[0].split(" ")[2])]["match_id"][0]
+
+#create df of chosen match
+df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
 
 dash.register_page(__name__, path='/heatmap', name="HEATMAP")
 
@@ -64,6 +81,14 @@ layout = html.Div([
 
         html.Div(id="heatmap-dropdowns", children=[
             dcc.Dropdown(
+                id='heatmap-match-dropdown',
+                options=[
+                    {'label': match, 'value': match} for match in match_names
+                ],
+                clearable=False,
+                placeholder="Select match"
+            ),
+            dcc.Dropdown(
                 id='heatmap-team-dropdown',
                 options=[{'label': "all", 'value': "all"}] + [{'label': team, 'value': team} for team in df['team_name'].unique()],
                 clearable=False,
@@ -85,12 +110,38 @@ layout = html.Div([
     ])
 ])
 
+# UPDATE TEAM DROPDOWN
+@callback(
+    Output('heatmap-team-dropdown', 'options'),
+    Input('heatmap-match-dropdown', 'value')
+)
+def update_team_dropdown(selected_match_name):
+    print(selected_match_name)
+    try:
+        chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+    except:
+        chosen_match_id = 3869685 #default match
+
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
+    teams_in_match = [team for team in df["team_name"].dropna().unique()]
+
+    return teams_in_match
+
 # UPDATE PLAYER DROPDOWN
 @callback(
     Output('heatmap-player-dropdown', 'options'),
+    Input('heatmap-match-dropdown', 'value'),
     Input('heatmap-team-dropdown', 'value')
 )
-def update_player_dropdown(selected_team):
+def update_player_dropdown(selected_match_name, selected_team):
+    try:
+        chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+    except:
+        chosen_match_id = 3869685 #default match
+    
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
     if selected_team == "all":
         mask_team = df.team_name == df.team_name
     else:
@@ -107,10 +158,18 @@ def update_player_dropdown(selected_team):
 # Callback to update graph based on selected team
 @callback(
     Output('heatmap-graph', 'figure'),
+    Input('heatmap-match-dropdown', 'value'),
     Input('heatmap-team-dropdown', 'value'),
     Input('heatmap-player-dropdown', 'value')
 )
-def update_graph(selected_team, selected_player):
+def update_graph(selected_match_name, selected_team, selected_player):
+    try:
+        chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+    except:
+        chosen_match_id = 3869685 #default match
+    
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
     list_of_accepted_actions = ["Pass", 'Ball Receipt', 'Carry', 'Ball Recovery', 'Block', 'Dribble', 'Shot', 'Goal Keeper', 'Dribbled Past', 'Player Off', 'Player On', 'Substitution', 'Shield']
     mask_action = df['type_name'].isin(list_of_accepted_actions)
 

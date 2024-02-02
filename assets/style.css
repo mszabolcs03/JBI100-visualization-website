@@ -139,7 +139,7 @@ body {
     height: fit-content;
     float: right;
 }
-    #heatmap-player-dropdown, #heatmap-team-dropdown {
+    #heatmap-player-dropdown, #heatmap-team-dropdown, #heatmap-match-dropdown {
         color: black;
         width: 20vw;
         /* background-color: #0EDFA7; */
