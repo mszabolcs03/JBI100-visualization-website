@@ -204,7 +204,7 @@ def update_graph(selected_match_name, selected_team, selected_player):
         nbinsx=100,
         nbinsy=400,
         range_color=[0, length/2],
-        color_continuous_scale=["rgb(80, 80, 80)", "rgb(255, 0, 0)"]
+        color_continuous_scale=["rgb(80, 80, 80)", "rgb(0, 255, 0)"]
     )
 
     fig.update(layout_showlegend=False)

@@ -90,7 +90,25 @@ body {
     color: white;
     text-decoration: underline;
 }
-
+.link {
+    color: white;
+    text-decoration: underline;
+    text-align: left;
+    display: block;
+    width: 100%;
+    float: left;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 1.2px;
+}
+.intro-paragraph {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-top: 10px;
+}
 
 /* // // INTRO // //  */
 

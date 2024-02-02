@@ -145,7 +145,7 @@ def update_team_dropdown(selected_match_name):
 
     teams_in_match = [team for team in df["team_name"].dropna().unique()]
 
-    return teams_in_match
+    return ["all"] + teams_in_match
 
 # UPDATE PLAYER DROPDOWN
 @callback(
