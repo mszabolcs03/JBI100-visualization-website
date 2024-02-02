@@ -120,7 +120,7 @@ body {
     height: fit-content;
     float: right;
 }
-    #passing-player-dropdown, #passing-team-dropdown {
+    #passing-player-dropdown, #passing-team-dropdown, #passing-match-dropdown {
         color: black;
         width: 20vw;
         /* background-color: #0EDFA7; */

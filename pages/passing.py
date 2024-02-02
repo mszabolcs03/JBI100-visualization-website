@@ -17,8 +17,26 @@ from getpitch import get_pitch
 parser = Sbopen()
 competitions = parser.competition()
 
-# Select the World Cup Final
-df, df_related, df_freeze, df_tactics = parser.event(3869685)
+# select world cup
+world_cup = competitions[competitions['competition_name'] == 'FIFA World Cup']
+world_cup_id = world_cup['competition_id'].iloc[0]
+season_id = world_cup['season_id'].iloc[0]
+
+# get list of matches
+matches = parser.match(competition_id=world_cup_id, season_id = season_id)
+
+# get list of match names
+match_names = []
+for i in range(len(matches)):
+    match_names.append(str(matches.loc[i]["home_team_country_name"] + " vs. " + matches.loc[i]["away_team_country_name"]))
+
+# choose default match
+chosen_match_id = matches[(matches["home_team_country_name"] == match_names[0].split(" ")[0]) & (matches["away_team_country_name"] == match_names[0].split(" ")[2])]["match_id"][0]
+
+#create df of chosen match
+df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
+
 
 dash.register_page(__name__, path='/passing', name="PASSING NETWORK")
 
@@ -29,9 +47,17 @@ layout = html.Div([
 
         html.Div(id="passing-dropdowns", children=[
             dcc.Dropdown(
+                id='passing-match-dropdown',
+                options=[
+                    {'label': match, 'value': match} for match in match_names
+                ],
+                clearable=False,
+                placeholder="Select match"
+            ),
+            dcc.Dropdown(
                 id='passing-team-dropdown',  # Corrected ID
                 options=[{'label': team, 'value': team} for team in df['team_name'].unique()],
-                value='Argentina'  # Default value
+                # value='Argentina'  # Default value
             )
         ]),
 
@@ -43,13 +69,44 @@ layout = html.Div([
     ])
 ])
 
+# UPDATE TEAM DROPDOWN
+@callback(
+    Output('passing-team-dropdown', 'options'),
+    Input('passing-match-dropdown', 'value')
+)
+def update_team_dropdown(selected_match_name):
+    print(selected_match_name)
+
+    try:
+        chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+    except:
+        chosen_match_id = 3869685 #default
+    
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
+    teams_in_match = [team for team in df["team_name"].dropna().unique()]
+
+    return teams_in_match
+
 # Callback to update graph based on selected team
 @callback(
     Output('passing-network-graph', 'figure'),
-    [Input('passing-team-dropdown', 'value')]
+    Input('passing-match-dropdown', 'value'),
+    Input('passing-team-dropdown', 'value')
 )
-def update_graph(selected_team):
-    team_id = df[df['team_name'] == selected_team]['team_id'].iloc[0]
+def update_graph(selected_match_name, selected_team):
+    try:
+        chosen_match_id = matches[(matches["home_team_country_name"] == selected_match_name.split(" ")[0]) & (matches["away_team_country_name"] == selected_match_name.split(" ")[2])]["match_id"].values[0]
+    except:
+        chosen_match_id = 3869685 #default match
+    
+    df, df_related, df_freeze, df_tactics = parser.event(chosen_match_id)
+
+    try:
+        team_id = df[df['team_name'] == selected_team]['team_id'].iloc[0]
+    except:
+        team_id = 779 #default team id
+
     pass_events = df[(df['type_name'] == 'Pass') & (df['team_id'] == team_id)]
 
     # Calculate the average positions of each player
